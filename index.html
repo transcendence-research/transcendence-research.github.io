@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Transcendence: Generative Models Can Outperform The Experts That Train Them">  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Transcendence: Generative Models Can Outperform
+    The Experts That Train Them</title>
+
+
+
+  <!-- custom fonts -->
+  <link rel="stylesheet" type="text/css"
+    href="https://cdn.rawgit.com/dreampulse/computer-modern-web-font/master/fonts.css">
+  <link href="https://fonts.cdnfonts.com/css/proxima-nova-2" rel="stylesheet">
+  <!-- end custom fonts -->
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" type="ico" href="./static/images/favicon.ico">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css"
+    integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js"
+    integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz"
+    crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js"
+    integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI"
+    crossorigin="anonymous"></script>
+  <script>
+
+    function whenAvailable(name, callback) {
+      var interval = 10; // ms
+      window.setTimeout(function () {
+        if (window[name]) {
+          callback(window[name]);
+        } else {
+          whenAvailable(name, callback);
+        }
+      }, interval);
+    }
+
+    whenAvailable("katex", function (t) {
+      // Put your macros below, key will be replaced by the corresponding macro
+      console.log('Rendering latex...')
+
+      katex.__defineMacro(`\\cx`, `\\mathcal{ X }`)
+      katex.__defineMacro(`\\cy`, `\\mathcal{ Y }`)
+      katex.__defineMacro(`\\cf`, `\\mathcal{ F }`)
+      katex.__defineMacro(`\\ch`, `\\mathcal{ H }`)
+      katex.__defineMacro(`\\ptest`, `p_{ \\mathrm{ test } }`)
+      katex.__defineMacro(`\\softmax`, `\\mathrm{ softmax }`)
+      katex.__defineMacro(`\\E`, `\\mathbb{ E }`)
+
+      katex.__defineMacro(`\\dist`, `\\mathcal{ D }`)
+      katex.__defineMacro(`\\distgen`, `\\overline{ \mathcal{ D } }`)
+      katex.__defineMacro(`\\distspec`, `\\mathcal{ D } _i`)
+      renderMathInElement(document.body)
+    });
+  </script>
+</head>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-1 publication-title">Transcendence: Generative Models Can Outperform
+              The Experts That Train Them</h1>
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">
+                Anonymous Authors</a>
+              </span>
+
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">Affiliation</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <!-- Demo Link. -->
+                <span class="link-block">
+                  <a target="_blank" href="https://lichess.org/@/ChessFormer-1000"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-play"></i>
+                      <!-- <i class="fas fa-chess-pawn"></i> -->
+                    </span>
+                    <span>Play with our Models</span>
+                  </a>
+
+                  <!-- Code Link. -->
+                  <span class="link-block">
+                    <a target="_blank" href="https://github.com/transcendence-research/chess-research"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                        <i class="fab fa-github"></i>
+                      </span>
+                      <span>Code</span>
+                    </a>
+                  </span>
+                  <!-- Dataset Link. -->
+                  <span class="link-block">
+                    <a target="_blank" href="https://github.com/transcendence-research/data"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                        <i class="far fa-images"></i>
+                      </span>
+                      <span>Data</span>
+                    </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="hero teaser">
+    <div class="container is-max-desktop">
+      <div class="hero-body">
+        <h2 class="subtitle has-text-centered">
+          We empirically and theoretically demonstrate that generative models can outperform the experts that train them
+          in chess
+          by
+          low-temperature sampling.
+        </h2>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="hero is-light is-small">
+    <div class="hero-body">
+      <div class="container">
+        <!-- <h2 class="title is-3">Main Result</h2> -->
+        <div class="columns is-centered has-text-centered">
+          <div></div>
+          <div class="column is-full-width">
+            <img src="./static/images/rating_temp.png" alt="chart">
+            <p style="margin: 1em 0">
+              Ratings of our autoregressive decoder-only transformer, ChessFormer, over several different temperatures.
+              Each model is trained only on games with players up to a certain rating (1000, 1300, 1500),
+              respectively. Interestingly, ChessFormer 1500 is unable to transcend at test time, a result that we
+              further analyze in the paper.
+            </p>
+          </div>
+          <br />
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section">
+    <div class="container is-max-desktop">
+      <!-- Abstract. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Generative models are trained with the simple objective of imitating the conditional probability
+              distribution induced by
+              the data they are trained on. Therefore, when trained on data generated by human experts, we may not
+              expect the
+              artificial model to outperform the experts on their original objectives. Yet it is often observed in
+              practice that such
+              models possess surprising capabilities, suggesting that they might surpass human experts in certain
+              aspects.
+            </p>
+            <p>
+              In this
+              work, we study the phenomenon of <em>transcendence</em>: when a generative model achieves capabilities
+              that surpass
+              the abilities
+              of the human experts generating its data. We demonstrate transcendence by training an autoregressive
+              transformer to play
+              chess from game transcripts, and show that the trained model can sometimes achieve better Glicko-2 scores
+              compared to
+              the players in the dataset.
+            </p>
+            <p>
+              We theoretically prove that transcendence is enabled by low-temperature
+              sampling, and
+              rigorously assess this experimentally. Finally, we discuss other forms of transcendence, laying the
+              groundwork for
+              future investigation of this phenomenon in a broader setting.
+            </p>
+          </div>
+        </div>
+      </div>
+      <!--/ Abstract. -->
+    </div>
+
+
+    <div style="height: 100px;"></div>
+
+    <div class="container is-max-desktop content">
+      <h2 class="title is-3">How Transcendence Works through Low-Temperature Sampling</h2>
+
+
+      Visualizing the denoising effects of low temperature on the action distribution: an example of ChessFormer
+      shifting
+      probability mass towards the high reward move of trapping the queen with the rook as the temperature \( \tau \)
+      decreases.
+      Opacity of the red arrows represent the probability mass given to different moves. The color of the square
+      represent the
+      reward that would be given for taking the action that moves the given piece to that state. Purple here is high
+      reward,
+      while blue is low.
+
+      <div class="columns is-centered has-text-centered" style="margin-top: 15px;">
+        <div class="column is-full-width">
+          <img src="./static/images/advantage-analysis.png" alt="chart">
+        </div>
+        <br />
+      </div>
+
+      In the figure below, we plot the distribution of the change in expected reward across two different interventions:
+      setting
+      \( \tau
+      \rightarrow .75 \) and \( \tau \rightarrow 0.001 \) by
+      running the
+      Stockfish analysis engine across 100 games played at 0.001 temperature against Stockfish level 1, as well as
+      sampling 100 potential moves per move per game to gather an empirical probability distribution with n = 382100
+      total
+      samples per \( \tau \) (38.2 moves on average per game). We find that \( \tau \rightarrow 0.001 \) improves the
+      expected
+      reward (probability of winning) by an average of <strong>2.17%</strong>, whilst \( \tau \rightarrow 0.75 \)
+      improves by
+      1.01%. Here, we define the "favor" of \( f' \) over \( f \) in \( x \) as the change in the reward function by
+      following some \( f' \) rather
+      than \( f \) for a given input \( x \): \( F(f', f ; x) = r_x(f') - r_x(f) \).
+
+      <div class="columns is-centered has-text-centered" style="margin-top: 15px;">
+        <div class="column is-full-width">
+          <img src="./static/images/adv-gain-dist-flat.png" alt="chart">
+        </div>
+        <br />
+      </div>
+
+    </div>
+
+
+    <div class="container is-max-desktop content">
+      <h2 class="title is-3">When Transcendence Happens</h2>
+
+
+      <h3>Formal Definition of Transcendence</h3>
+
+      <div class="columns ">
+        <div class="column is-full-width">
+
+          In a setting of \( f_1, \dots, f_k \in \cf \) experts, \( \cx \) input
+          distribution, and \( p \in P(\cx) \), we define <em>transcendence</em> to be:
+
+          \[
+
+          R_{p_{test}}(\hat{f}) > \max_{i \in [k]} R_{\ptest}(f_i).
+
+          \]
+
+
+          Here \( R_{\ptest}(f) \) is the expected reward of a predictor \( f \) on the test distribution \( \ptest \),
+          and \( r(x, y) \) is the reward function:
+          \[
+
+          R_{\ptest}(f) = \mathbb{E}_{x \sim \ptest}\left[r_x(f)\right], ~~~\mathrm{where}~~r_x(f) = \mathbb{E}_{y \sim
+          f(\cdot |
+          x)} \left[r(x,y)\right].
+
+          \]
+
+          In other words, <em>transcendence</em> describes cases where the learned predictor performs better (achieves
+          better reward) than
+          the best expert generating the data.
+          Note that we are focusing on an idealized setting, where the learner has access to infinite amount of data
+          from the
+          distribution \( \dist \) , and can arbitrarily choose any function to fit the distribution (not limited to a
+          particular
+          choice of architecture or optimization constraints). As we will show, even in this idealized setting,
+          transcendence can
+          be impossible to achieve without further modifying the disribution.
+
+        </div>
+
+      </div>
+      <h3>Transcendence is possible with Low-Temperature Sampling</h3>
+
+      <div class="columns ">
+        <div class="column is-full-width">
+
+
+          Now, we consider a temperature sampling scheme over the learned function \( \hat{f} \). Namely, for some
+          temperature \( \tau >
+          0 \), and some probability distribution \( q \in P(\cy) \), denote the softmax operator with temperature \(
+          \tau \) by
+          \( \softmax(q;\tau) \in P(\cy) \) such that
+
+          \[
+          \softmax(q; \tau)_y = \frac{\exp(q_y/\tau)}{\sum_{y' \in \cy}\exp(q_{y'}/\tau)}
+          \]
+
+          Additionally, we define \( \argmax(q) \in P(\cy) \) to be the uniform distribution over the maximal values of
+          \( q \),
+          namely
+
+          \[
+
+          \argmax{q} = \begin{cases}
+          1/|{Y_q}| & \mathrm{if}~y \in Y_q \\
+          0 & \mathrm{if}~y \notin Y_q
+          \end{cases}, ~~~\mathrm{where}~~~ Y_q = \{y \in \cy ~:~q_y = \max(q)\}
+
+          \]
+
+          Now, define \( \hat{f}_\tau \) to be the temperature sampling of \( \hat{f} \), i.e.
+
+          \[
+
+          \hat{f}_\tau(\cdot|x)
+          =
+          \softmax(\hat{f}
+          (\cdot|x);\tau)
+
+          \]
+
+          and \( \hat{f}_{\max} \) the arg-max ''sampling'' of \( \hat{f} \), i.e.
+
+          \[
+          \hat{f}_{\max}(\cdot|x) =
+          \argmax(\hat{f}(\cdot|x)).
+
+          \]
+
+          We prove in the paper that if the arg-max predictor \( \hat{f}_{\max} \) is better than
+          the best
+          expert,
+          then transcendence is possible with low-temperature sampling.
+
+
+          Assume that \( R_{\ptest}(\hat{f}_{\max}) > \max_{i \in [k]} R_{\ptest}(f_i) \), then there exists some
+          temperature \( \tau
+          \in (0,1) \) s.t. for all \( 0 \le \tau' \le \tau \) it holds that.
+
+          \[
+          R_{\ptest}(\hat{f}_{\tau'}) > \max_{i \in [k]} R_{\ptest}(f_i)
+          \]
+
+
+
+        </div>
+
+      </div>
+      <h3>Transcendence is possible with Diverse Datasets</h3>
+      <div class="columns ">
+        <div class="column is-full-width">
+
+          Our theory requires dataset diversity as a
+          necessary condition for enabling transcendence. As shown in the first figure, not all
+          models are able to transcend. Unlike ChessFormer 1000 or 1300, the Chessformer 1500 fails to transcend. We
+          hypothesize that this is due to the fact that in the band of ratings from 1000 to 1500, diversity does not
+          significantly increase. If this is true, a 1000 rated player can be thought of as a noisy 1500 rated
+          player, but a 1500 rated player cannot be thought of as a noisy 2000 rated player.
+
+          We explore this research question by quantifying dataset diversity through
+          the normalized entropy on the action distribution $$\mathcal{H}_f(Y | X)= {\mathbb{E}_{y \sim
+          f(y|x=X)}[-\log_2
+          f(y | x=X)]}/{\log_2 |\mathcal{Y}|}$$ To gain intuition for this metric, imagine the action distribution of
+          moves taken for any given state. Entropy will be higher for more uniform action distributions, and lower for
+          more deterministic, peaked action distributions. The average entropy of these action distributions can
+          therefore serve as a measurement of the diversity of the dataset. We normalize this entropy to the range \([0,
+          1]\) by dividing by the binary log of the number of legal moves: \(\log_2 |\mathcal{Y}|\).
+
+          Importantly, we cannot calculate this normalized entropy for every state, as most states after move 16 in
+          the midgame and before the engame are unique within the dataset and we therefore observe just a single action
+          for thus states. Therefore our metric is limited in that it only considers opening moves, the beginning of the
+          midgame, and the endgame. We consider only common states with greater than 100 actions by sampling
+          1,000,000 games from each dataset. The average entropy confirm our hypothesis: The &lt; 1500 cut off dataset
+          has on average less diversity than the &lt; 1300 dataset, which has is again less than the &lt; 1000 dataset.
+          This points towards answering our research question in the affirmative; Chessformer 1500 likely is not
+          transcendent due to a lack of diversity in its dataset. If the entropy stayed constant for each dataset,
+          this would imply a similar level of diversity for each. In such a case, we would expect that ChessFormer
+          1500 likely would also transcend. Instead, as predicted, Chessformer 1500 likely is not transcendent due
+          to a lack of diversity in its dataset. </div>
+      </div>
+      <div style="display: flex; align-items: center;">
+        <div class="columns is-centered has-text-centered" style="margin-top: 15px; flex-shrink: 0;">
+          <div class="column is-full-width">
+            <img style="width: 400px;" src="./static/images/entropy_of_action_distribution_over_common_states.png"
+              alt="chart">
+          </div>
+          <br />
+        </div>
+        Action distribution diversity, as measured by the average normalized entropy over different chess
+        rating dataset cutoffs with n = 2681, 3037, 3169 common states for ratings 1000, 1300, 1500, respectively.
+        These entropies are calculated directly from the empiricial frequencies of our dataset, and are model-agnostic.
+
+      </div>
+
+    </div>
+
+    <div class="container is-max-desktop content">
+      <h2 class="title is-3">t-SNE Embeddings of ChessFormer</h2>
+      Try zooming in by right clicking on the image, and click "Open Image in New Tab".
+
+
+      Inspired by <a href="https://www.nature.com/articles/nature14236" target="_blank"> Deep Q-Networks (DQN) </a>,
+      we
+      generate a <a href="https://distill.pub/2016/misread-tsne/" target="_blank">t-SNE embedding</a> of ChessFormer's
+      last
+      hidden
+      layer latent representations of game transcripts during training time. The colors represent the probability of
+      winning,
+      with $+1$ corresponding to a state where White has won and -1 to Black. We also visualize several board states
+      associated different clusters within the t-SNE embedding, and their associated expected reward when following
+      the
+      expert
+      Stockfish distribution.
+
+      <div class="columns is-centered has-text-centered" style="margin: 15px 0;">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/latent_board_state_reward_tsne.png" alt="chart">
+        </div>
+        <br />
+      </div>
+
+      We visualize the full TSNE here, coloring by the reward of the game. We see that the model has learned some
+      representation of the
+      reward, with high absolute reward states being more likely to be near each other in the latent space. This also
+      points towards evidence that the model has learned some sort equivariant representation of the player identity,
+      as
+      the region of symmetric high reward states indicate. Note that reward is not
+      directly given to the model during training.
+
+      <div class="columns is-centered has-text-centered" style="margin: 15px 0;">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/latent_board_state_tsne_0_1.png" alt="chart">
+        </div>
+        <br />
+      </div>
+
+      We visualize the full TSNE again here, but this time coloring by game length rather than reward. We see that
+      games
+      with high reward tend to be longer, which makes logical sense as the result of the game will tend to be clearer
+      as
+      the game proogresses.
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/latent_board_state_game_len_tsne.png" alt="chart">
+        </div>
+        <br />
+      </div>
+
+    </div>
+
+    <div class="container is-max-desktop content">
+      <h2 class="title is-3">Additional Denoising Visualizations</h2>
+      Here, we illustrate the importance of denoising. In the image below, denoising helps black find the only correct
+      move. White has pinned the black rook to
+      the Queen: any move where the rook does not move to e4 results in a heavy loss of material. As \(\tau\)
+      decreases,
+      the expected reward increases substantially and converges onto the correct move.
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/denoising_viz1.png" alt="chart">
+        </div>
+        <br />
+      </div>
+      <br /> <br />
+
+      Another example where denoising helps avoid errors. Moving the queen to either d1 or h1 takes a bishop or rook,
+      respectively, but loses the queen in the following turn. While queen to e5 does not put the queen in immediate
+      danger,
+      it allows white to push the pawn on f3 to d3, where it threatens the queen and is protected by the bishop on c1.
+      The queen then must move out of danger, losing its opportunity to take the free pawn on h4 and giving white
+      valuable space towards the center of the board. As \(\tau\) decreases, the expected reward converges to the move
+      queen to d4, taking the pawn and checking the black king.
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/denoising_viz2.png" alt="chart">
+        </div>
+        <br />
+      </div>
+      <br /> <br />
+      In this setup, a higher temperature shows two plausible moves for the black rook: g1 or f1. As the temperature
+      decreases, the expected reward converges to g1. If the black rook were to move to f1, the white rook would take
+      the black rook, blocking the black pawn on f2 from promoting and protecting the promotion square from the 
+      h2 pawn. If the rook were to move to g1, on the other hand, it would open the promotion square from the h2 pawn
+      without being at any immediate risk. If white responded by moving its bishop to g2, protecting the promotion squares
+      from both of the advanced black pawns, black could respond by taking the rook on a1, gaining significant material. 
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/denoising_viz3.png" alt="chart">
+        </div>
+        <br />
+      </div>
+      <br /> <br />
+
+    </div>
+    <div class="container is-max-desktop content">
+      <h2 class="title is-3">Intuition of Low Temperature Sampling Inducing Transcendence</h2>
+      To build intuition for the primary mechanism of transcendence that we explore in this work, we give the following
+      toy progression of distributions in order to clearly illustrate how low-temperature sampling can induce
+      transcendence through majority voting. Here, the middle purple action represents the correct, high-reward output,
+      whilst the left and right actions are low-reward, suboptimal outputs. We plot the probability of each output as a label on
+      the x axis.
+      <br /> <br />
+
+      The first expert output distribution. Although it puts non-negligible mass on the purple, high-reward
+      action, it still samples a low-reward action the majority of the time.
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/intuition1.png" alt="chart">
+        </div>
+        <br />
+      </div>
+      <br /> <br />
+
+      The second expert output distribution. Symmetric to to the first expert, it also puts non-negligible mass
+      on the purple, high-reward action. However, it samples a low-reward action the majority of the time on the right.
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/intuition2.png" alt="chart">
+        </div>
+        <br />
+      </div>
+      <br /> <br />
+      By taking the average of the first and second expert, we observe that this distribution now puts the majority of
+      mass onto the correct action.
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/intuition3.png" alt="chart">
+        </div>
+        <br />
+      </div>
+      <br /> <br />
+      Finally, by setting temperature \(\tau\) to be &lt;1, more weight is shifted towards the high probability action,
+      leading to a gain in the expected reward.
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-full-width">
+          <img style="margin: 15px 0" src="./static/images/intuition4.png" alt="chart">
+        </div>
+        <br />
+      </div>
+      <br /> <br />
+    </div>
+
+    </div>
+  </section>
+
+
+
+  <section class="section">
+    <div class="container is-max-desktop">
+
+      <!-- Concurrent Work. -->
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3">Related Work</h2>
+
+          <div class="content has-text-justified">
+            <p>
+              This project is built on some exceptional prior projects and platforms, which we are extraordinarily
+              grateful for.
+              In no particular order, these include
+              <a href="https://database.lichess.org">Lichess</a>, our dataset source,
+              <a href="https://adamkarvonen.github.io/machine_learning/2024/01/03/chess-world-models.html">Adam
+                Karvonen's codebase for training chess models</a> and the
+              <a href="https://stockfishchess.org/">StockFish chess engine</a>.
+
+
+            </p>
+
+          </div>
+        </div>
+      </div>
+      <!--/ Concurrent Work. -->
+
+    </div>
+  </section>
+
+
+
+  </div>
+  </section>
+  <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">Get Started</h2>
+      <pre><code>$ git clone https://github.com/transcendence-research/chess-research.git
+$ make install && source .vevn/bin/activate
+$ chess_research --help
+Setting up experiment...
+usage: chess_research [-h] [--save_interval SAVE_INTERVAL] [--eval_every_n_saves EVAL_EVERY_N_SAVES] [--log_interval
+LOG_INTERVAL]
+[--eval_iters EVAL_ITERS] [--eval_only [EVAL_ONLY]] [--eval_n_games EVAL_N_GAMES]
+[--eval_default_elo EVAL_DEFAULT_ELO] [--eval_job_id EVAL_JOB_ID] [--eval_job_total EVAL_JOB_TOTAL]
+[--always_save_checkpoint [ALWAYS_SAVE_CHECKPOINT]] [--no_always_save_checkpoint] [--wandb_log [WANDB_LOG]]
+[--wandb_project WANDB_PROJECT] [--wandb_run_name WANDB_RUN_NAME] [--resume_from RESUME_FROM]
+[--resume_iter_num RESUME_ITER_NUM] [--dataset DATASET] [--gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS]
+[--batch_size BATCH_SIZE] [--block_size BLOCK_SIZE] [--n_layer N_LAYER] [--n_head N_HEAD] [--n_embd N_EMBD]
+[--dropout DROPOUT] [--bias [BIAS]] [--learning_rate LEARNING_RATE] [--max_iters MAX_ITERS]
+[--weight_decay WEIGHT_DECAY] [--beta1 BETA1] [--beta2 BETA2] [--grad_clip GRAD_CLIP] [--decay_lr [DECAY_LR]]
+[--no_decay_lr] [--warmup_iters WARMUP_ITERS] [--lr_decay_iters LR_DECAY_ITERS] [--min_lr MIN_LR]
+[--backend BACKEND] [--device DEVICE] [--dtype DTYPE] [--compile [COMPILE]] [--low_elo LOW_ELO]
+[--high_elo HIGH_ELO] [--win_condition [WIN_CONDITION]] [--no_win_condition] [--length_gen LENGTH_GEN]
+[--temperature TEMPERATURE] [--seed SEED] [--debug [DEBUG]] [--temperature_sampling [TEMPERATURE_SAMPLING]]
+[--no_temperature_sampling] [--elo_generalize [ELO_GENERALIZE]] [-c CONFIG]
+
+options:
+-h, --help show this help message and exit
+--save_interval SAVE_INTERVAL
+--eval_every_n_saves EVAL_EVERY_N_SAVES
+--log_interval LOG_INTERVAL
+--eval_iters EVAL_ITERS
+--eval_only [EVAL_ONLY]
+--eval_n_games EVAL_N_GAMES
+--eval_default_elo EVAL_DEFAULT_ELO
+--eval_job_id EVAL_JOB_ID
+--eval_job_total EVAL_JOB_TOTAL
+--always_save_checkpoint [ALWAYS_SAVE_CHECKPOINT]
+--no_always_save_checkpoint
+--wandb_log [WANDB_LOG]
+--wandb_project WANDB_PROJECT
+--wandb_run_name WANDB_RUN_NAME
+--resume_from RESUME_FROM
+--resume_iter_num RESUME_ITER_NUM
+--dataset DATASET
+--gradient_accumulation_steps GRADIENT_ACCUMULATION_STEPS
+--batch_size BATCH_SIZE
+--block_size BLOCK_SIZE
+--n_layer N_LAYER
+--n_head N_HEAD
+--n_embd N_EMBD
+--dropout DROPOUT
+--bias [BIAS]
+--learning_rate LEARNING_RATE
+--max_iters MAX_ITERS
+--weight_decay WEIGHT_DECAY
+--beta1 BETA1
+--beta2 BETA2
+--grad_clip GRAD_CLIP
+--decay_lr [DECAY_LR]
+--no_decay_lr
+--warmup_iters WARMUP_ITERS
+--lr_decay_iters LR_DECAY_ITERS
+--min_lr MIN_LR
+--backend BACKEND
+--device DEVICE
+--dtype DTYPE
+--compile [COMPILE]
+--low_elo LOW_ELO
+--high_elo HIGH_ELO
+--win_condition [WIN_CONDITION]
+--no_win_condition
+--length_gen LENGTH_GEN
+--temperature TEMPERATURE
+--seed SEED
+--debug [DEBUG]
+--temperature_sampling [TEMPERATURE_SAMPLING]
+--no_temperature_sampling
+--elo_generalize [ELO_GENERALIZE]
+-c CONFIG, --config CONFIG
+</code></pre>
+    </div>
+  </section>
+
+
+
+
+  <footer class="footer">
+    <div class="container">
+
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+            <p style="text-align: center
+            ">
+              Website templated borrowed from <a href="https://github.com/nerfies/nerfies.github.io">nerfies.</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</body>
+
+</html>
